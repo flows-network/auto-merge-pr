@@ -8,3 +8,5 @@ payload.json
 comments.json
 pr.payload.json
 codeowners.txt
+pr.review.json
+pr.payload.flow.json
