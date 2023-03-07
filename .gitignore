@@ -1,5 +1,6 @@
 /target
 .env
+payload.flow.json
 Cargo.lock
 fork.payload.json
 fork_event.json
