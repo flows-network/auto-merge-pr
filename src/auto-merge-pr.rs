@@ -30,10 +30,19 @@ async fn handler(payload: EventPayload) {
         send_message_to_channel(
             "ik8",
             "step_1",
-            serde_json::to_string(&pull_request).unwrap(),
+            serde_json::to_string(&pull_request)
+                .unwrap_or("parsing pull request failed".to_string()),
         );
-        send_message_to_channel("ik8", "step_2", serde_json::to_string(&review).unwrap());
-        send_message_to_channel("ik8", "step_3", serde_json::to_string(&repository).unwrap());
+        send_message_to_channel(
+            "ik8",
+            "step_2",
+            serde_json::to_string(&review).unwrap_or("parsing review failed".to_string()),
+        );
+        send_message_to_channel(
+            "ik8",
+            "step_3",
+            serde_json::to_string(&repository).unwrap_or("parse repository failed".to_string()),
+        );
 
         // let raw_data: serde_json::Value = serde_json::from_slice(payload).unwrap();
 
