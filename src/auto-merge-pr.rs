@@ -23,26 +23,32 @@ pub async fn run() -> anyhow::Result<()> {
 
 // comments_url = https://api.github.com/repos/jaykchen/vitesse-lite/issues/7/comments
 async fn handler(payload: EventPayload) {
-    if let EventPayload::UnknownEvent(e) = payload {
-        let pull_request = e["pull_request"].clone();
-        let review = e["review"].clone();
-        let repository = e["repository"].clone();
+    if let EventPayload::UnknownEvent(ref e) = payload {
         send_message_to_channel(
             "ik8",
-            "step_1",
-            serde_json::to_string(&pull_request)
-                .unwrap_or("parsing pull request failed".to_string()),
+            "general",
+            serde_json::to_string(&payload).unwrap_or("payload review failed".to_string()),
         );
-        send_message_to_channel(
-            "ik8",
-            "step_2",
-            serde_json::to_string(&review).unwrap_or("parsing review failed".to_string()),
-        );
-        send_message_to_channel(
-            "ik8",
-            "step_3",
-            serde_json::to_string(&repository).unwrap_or("parse repository failed".to_string()),
-        );
+
+        // let pull_request = e["pull_request"].clone();
+        // let review = e["review"].clone();
+        // let repository = e["repository"].clone();
+        // send_message_to_channel(
+        //     "ik8",
+        //     "step_1",
+        //     serde_json::to_string(&pull_request)
+        //         .unwrap_or("parsing pull request failed".to_string()),
+        // );
+        // send_message_to_channel(
+        //     "ik8",
+        //     "step_2",
+        //     serde_json::to_string(&review).unwrap_or("parsing review failed".to_string()),
+        // );
+        // send_message_to_channel(
+        //     "ik8",
+        //     "step_3",
+        //     serde_json::to_string(&repository).unwrap_or("parse repository failed".to_string()),
+        // );
 
         // let raw_data: serde_json::Value = serde_json::from_slice(payload).unwrap();
 
@@ -64,19 +70,19 @@ async fn handler(payload: EventPayload) {
 
         // let url = "https://api.github.com/repos/jaykchen/vitesse-lite/pulls/7/comments";
 
-        let octocrab = get_octo(Some(String::from("jaykchen")));
+        // let octocrab = get_octo(Some(String::from("jaykchen")));
 
-        let pr = octocrab.pulls("jaykchen", "vitesse-lite");
+        // let pr = octocrab.pulls("jaykchen", "vitesse-lite");
 
-        let pr_id = 7;
-        let comment_page = pr.list_reviews(pr_id).await.unwrap();
-        let comments = comment_page
-            .items
-            .into_iter()
-            .map(|c| c.body_text.unwrap())
-            .collect::<Vec<String>>()
-            .join("");
-        send_message_to_channel("ik8", "step_4", comments);
+        // let pr_id = 7;
+        // let comment_page = pr.list_reviews(pr_id).await.unwrap();
+        // let comments = comment_page
+        //     .items
+        //     .into_iter()
+        //     .map(|c| c.body_text.unwrap())
+        //     .collect::<Vec<String>>()
+        //     .join("");
+        // send_message_to_channel("ik8", "step_4", comments);
 
         // let temp = comments.iter().filter(|c| c..contains("lgtm"));
 
