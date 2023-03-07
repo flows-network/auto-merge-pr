@@ -24,6 +24,17 @@ pub async fn run() -> anyhow::Result<()> {
 // comments_url = https://api.github.com/repos/jaykchen/vitesse-lite/issues/7/comments
 async fn handler(payload: EventPayload) {
     if let EventPayload::UnknownEvent(e) = payload {
+        let pull_request = e["pull_request"].clone();
+        let review = e["review"].clone();
+        let repository = e["repository"].clone();
+        send_message_to_channel(
+            "ik8",
+            "step_1",
+            serde_json::to_string(&pull_request).unwrap(),
+        );
+        send_message_to_channel("ik8", "step_2", serde_json::to_string(&review).unwrap());
+        send_message_to_channel("ik8", "step_3", serde_json::to_string(&repository).unwrap());
+
         // let raw_data: serde_json::Value = serde_json::from_slice(payload).unwrap();
 
         // let review_id = raw_data["review"]["id"].as_i64().unwrap_or(0);
@@ -56,7 +67,7 @@ async fn handler(payload: EventPayload) {
             .map(|c| c.body_text.unwrap())
             .collect::<Vec<String>>()
             .join("");
-        send_message_to_channel("ik8", "step_2", comments);
+        send_message_to_channel("ik8", "step_4", comments);
 
         // let temp = comments.iter().filter(|c| c..contains("lgtm"));
 
@@ -86,6 +97,7 @@ async fn handler(payload: EventPayload) {
 
 //     let url = format!(
 //         "https://api.github.com/repos/{}/{}/pulls/{}/reviews/{}/comments",
+// "https://api.github.com/repos/jaykchen/vitesse-lite/pulls/1259711866/reviews/1325364967/comments",
 //         owner, repo, pull_number, review_id
 //     );
 //     let uri = Uri::try_from(&url).unwrap();
