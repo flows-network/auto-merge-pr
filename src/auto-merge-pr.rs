@@ -67,7 +67,6 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
             let val: serde_json::Value = serde_json::from_str(&text).unwrap();
 
             pull_number = val["pull_request"]["number"].as_u64().unwrap_or(0);
-            return;
         }
 
         _ => {
