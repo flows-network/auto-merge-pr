@@ -61,12 +61,6 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
                 return;
             }
         },
-        EventPayload::UnknownEvent(e) => {
-            let text = e.to_string();
-            send_message_to_channel("ik8", "step_2", text);
-            return;
-        }
-
         _ => {
             send_message_to_channel("ik8", "step_3", "unknow payload".to_string());
             return;
