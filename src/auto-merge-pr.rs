@@ -27,40 +27,46 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
     let octo = get_octo(Some(String::from(owner)));
 
     match payload {
+        EventPayload::IssuesEvent(e) => {
+            send_message_to_channel("ik8", "general", "This is issue event".to_string());
+            return;
+        }
+        EventPayload::IssueCommentEvent(e) => {
+            send_message_to_channel("ik8", "general", "This is issue Comment event".to_string());
+            return;
+        }
+        EventPayload::CommitCommentEvent(e) => {
+            send_message_to_channel("ik8", "general", "This is commit Comment event".to_string());
+            return;
+        }
         EventPayload::PullRequestEvent(e) => {
-            send_message_to_channel("ik8", "step_1", "a pr was filed".to_string());
+            send_message_to_channel("ik8", "general", "This is pull_request event".to_string());
             return;
         }
 
         EventPayload::PullRequestReviewEvent(e) => {
             pull_number = e.pull_request.number;
+            send_message_to_channel(
+                "ik8",
+                "general",
+                "This is pull_request  review event".to_string(),
+            );
+            return;
         }
         EventPayload::PullRequestReviewCommentEvent(e) => {
-            pull_number = e.pull_request.number;
+            send_message_to_channel(
+                "ik8",
+                "general",
+                "This is pull_request  review comment event".to_string(),
+            );
+            return;
         }
-        EventPayload::IssueCommentEvent(e) => match e.issue.pull_request {
-            Some(pr) => {
-                let pull_request_url = pr.url;
-                let possible_pull_number_str = pull_request_url
-                    .path_segments()
-                    .unwrap()
-                    .collect::<Vec<_>>()
-                    .pop()
-                    .unwrap();
+        EventPayload::UnknownEvent(e) => {
+            let text = e.to_string();
+            send_message_to_channel("ik8", "general", text);
+            return;
+        }
 
-                if possible_pull_number_str.parse::<u64>().is_ok() {
-                    pull_number = possible_pull_number_str.parse::<u64>().unwrap();
-                }
-            }
-            None => {
-                send_message_to_channel(
-                    "ik8",
-                    "step_1",
-                    "there is issue_comment on your repo, not about pr".to_string(),
-                );
-                return;
-            }
-        },
         _ => {
             send_message_to_channel("ik8", "step_3", "unknow payload".to_string());
             return;
