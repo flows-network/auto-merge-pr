@@ -24,6 +24,7 @@ pub async fn run() -> anyhow::Result<()> {
 
 async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_list: &Vec<String>) {
     let mut pull_number = 0;
+    let octo = get_octo(Some(String::from(owner)));
 
     match payload {
         EventPayload::PullRequestEvent(e) => {
@@ -37,6 +38,29 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
         EventPayload::PullRequestReviewCommentEvent(e) => {
             pull_number = e.pull_request.number;
         }
+        EventPayload::IssueCommentEvent(e) => match e.issue.pull_request {
+            Some(pr) => {
+                let pull_request_url = pr.url;
+                let possible_pull_number_str = pull_request_url
+                    .path_segments()
+                    .unwrap()
+                    .collect::<Vec<_>>()
+                    .pop()
+                    .unwrap();
+
+                if possible_pull_number_str.parse::<u64>().is_ok() {
+                    pull_number = possible_pull_number_str.parse::<u64>().unwrap();
+                }
+            }
+            None => {
+                send_message_to_channel(
+                    "ik8",
+                    "step_1",
+                    "there is issue_comment on your repo, not about pr".to_string(),
+                );
+                return;
+            }
+        },
         EventPayload::UnknownEvent(e) => {
             let text = e.to_string();
             send_message_to_channel("ik8", "step_2", text);
@@ -49,7 +73,6 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
         }
     }
     let mut count = 0;
-    let octo = get_octo(Some(String::from(owner)));
     let review_page = octo.pulls(owner, repo).list_reviews(pull_number).await;
 
     match review_page {
