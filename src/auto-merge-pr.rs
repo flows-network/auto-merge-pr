@@ -27,23 +27,22 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
     let octo = get_octo(Some(String::from(owner)));
 
     match payload {
-        EventPayload::IssuesEvent(e) => {
-            send_message_to_channel("ik8", "general", "This is issue event".to_string());
-            return;
-        }
-        EventPayload::IssueCommentEvent(e) => {
-            send_message_to_channel("ik8", "general", "This is issue Comment event".to_string());
-            return;
-        }
-        EventPayload::CommitCommentEvent(e) => {
-            send_message_to_channel("ik8", "general", "This is commit Comment event".to_string());
-            return;
-        }
-        EventPayload::PullRequestEvent(e) => {
-            send_message_to_channel("ik8", "general", "This is pull_request event".to_string());
-            return;
-        }
+        EventPayload::IssueCommentEvent(e) => match e.issue.pull_request {
+            Some(pr) => {
+                let pull_request_url = pr.url;
+                let possible_pull_number_str = pull_request_url
+                    .path_segments()
+                    .unwrap()
+                    .collect::<Vec<_>>()
+                    .pop()
+                    .unwrap();
 
+                if possible_pull_number_str.parse::<u64>().is_ok() {
+                    pull_number = possible_pull_number_str.parse::<u64>().unwrap_or(0);
+                }
+            }
+            None => {}
+        },
         EventPayload::PullRequestReviewEvent(e) => {
             pull_number = e.pull_request.number;
             send_message_to_channel(
@@ -95,8 +94,9 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
                 }
                 if count >= 2 {
                     // merge pr
-                    let _ = octo.pulls(owner, repo).merge(pull_number);
-                    send_message_to_channel("ik8", "step_3", "pr merged".to_string());
+                    let _ = octo.pulls(owner, repo).merge(pull_number).send().await;
+                    let body = format!("PR #{} merged", pull_number);
+                    send_message_to_channel("ik8", "step_3", body);
                     return;
                 }
             }
