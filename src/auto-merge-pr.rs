@@ -45,20 +45,9 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
         },
         EventPayload::PullRequestReviewEvent(e) => {
             pull_number = e.pull_request.number;
-            send_message_to_channel(
-                "ik8",
-                "general",
-                "This is pull_request  review event".to_string(),
-            );
-            return;
         }
         EventPayload::PullRequestReviewCommentEvent(e) => {
-            send_message_to_channel(
-                "ik8",
-                "general",
-                "This is pull_request  review comment event".to_string(),
-            );
-            return;
+            pull_number = e.pull_request.number;
         }
         EventPayload::UnknownEvent(e) => {
             let text = e.to_string();
@@ -68,16 +57,13 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
             pull_number = val["pull_request"]["number"].as_u64().unwrap_or(0);
         }
 
-        _ => {
-            send_message_to_channel("ik8", "step_3", "unknow payload".to_string());
-            return;
-        }
+        _ => (),
     }
     let mut count = 0;
     let review_page = octo.pulls(owner, repo).list_reviews(pull_number).await;
 
     match review_page {
-        Err(e) => send_message_to_channel("ik8", "step_4", e.to_string()),
+        Err(_) => (),
         Ok(items) => {
             for item in items {
                 let reviewer_login: String = if item.user.is_some() {
@@ -85,18 +71,16 @@ async fn handler(owner: &str, repo: &str, payload: EventPayload, lead_reviewer_l
                 } else {
                     "".to_string()
                 };
-                let review_text = item.body.unwrap_or("".to_string());
+                let review_text = item.body.unwrap_or("".to_string().to_lowercase());
 
-                if lead_reviewer_list.contains(&reviewer_login)
-                    && review_text.to_lowercase().contains("lgtm")
-                {
+                if lead_reviewer_list.contains(&reviewer_login) && review_text.contains("lgtm") {
                     count += 1;
                 }
                 if count >= 2 {
                     // merge pr
                     let _ = octo.pulls(owner, repo).merge(pull_number).send().await;
                     let body = format!("PR #{} merged", pull_number);
-                    send_message_to_channel("ik8", "step_3", body);
+                    send_message_to_channel("ik8", "general", body);
                     return;
                 }
             }
